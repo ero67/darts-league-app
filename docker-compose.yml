@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: darts-postgres
+    environment:
+      POSTGRES_DB: darts_league
+      POSTGRES_USER: darts_user
+      POSTGRES_PASSWORD: darts_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks:
+      - darts-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U darts_user -d darts_league"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: darts-backend
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=darts_user
+      - DB_PASSWORD=darts_password
+      - DB_NAME=darts_league
+      - DB_SSLMODE=disable
+      - PORT=8080
+      - GIN_MODE=release
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - darts-network
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app/src # For development hot reload (optional)
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  darts-network:
+    driver: bridge

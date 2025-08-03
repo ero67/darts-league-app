@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+
+  backend-dev:
+    image: golang:1.23-alpine
+    container_name: darts-backend-dev
+    working_dir: /app
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=darts_user
+      - DB_PASSWORD=darts_password
+      - DB_NAME=darts_league
+      - DB_SSLMODE=disable
+      - PORT=8080
+      - GIN_MODE=debug
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+    command: sh -c "go mod download && go run cmd/server/main.go"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - darts-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  darts-network:
+    driver: bridge
