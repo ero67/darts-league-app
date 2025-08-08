@@ -2,9 +2,10 @@ package usecases
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"darts-league-backend/internal/domain/entities"
 	"darts-league-backend/internal/domain/repositories"
+
+	"github.com/google/uuid"
 )
 
 type TournamentUseCase struct {
@@ -26,7 +27,7 @@ func NewTournamentUseCase(
 }
 
 // CreateTournament creates a new tournament in a league
-func (uc *TournamentUseCase) CreateTournament(ctx context.Context, leagueID uuid.UUID, name, description string, tournamentType entities.TournamentType) (*entities.Tournament, error) {
+func (uc *TournamentUseCase) CreateTournament(ctx context.Context, leagueID uuid.UUID, name string, tournamentType entities.TournamentType) (*entities.Tournament, error) {
 	// Check if league exists and can add tournaments
 	league, err := uc.leagueRepo.GetByID(ctx, leagueID)
 	if err != nil {
@@ -44,7 +45,7 @@ func (uc *TournamentUseCase) CreateTournament(ctx context.Context, leagueID uuid
 	}
 
 	// Create tournament entity
-	tournament, err := entities.NewTournament(leagueID, name, description, tournamentType, tournamentNumber)
+	tournament, err := entities.NewTournament(leagueID, name, tournamentType, tournamentNumber)
 	if err != nil {
 		return nil, err
 	}

@@ -74,7 +74,7 @@
       </div>
 
       <!-- Quick Match Section -->
-      <div class="col-12 col-md-6">
+      <!-- <div class="col-12 col-md-6">
         <q-card>
           <q-card-section>
             <div class="text-h6 q-mb-md">
@@ -122,7 +122,7 @@
             />
           </q-card-section>
         </q-card>
-      </div>
+      </div> -->
 
       <!-- Create Tournament Section -->
       <div class="col-12 col-md-6">
@@ -166,21 +166,24 @@
               <q-icon name="group" class="q-mr-sm" />
               League Players
             </div>
-
-            <q-list v-if="currentLeague?.players?.length" separator>
-              <q-item v-for="player in currentLeague.players" :key="player.id">
+            <q-list v-if="leagueStandings?.data?.length" separator>
+              <q-item v-for="player in leagueStandings.data" :key="player.id">
                 <q-item-section avatar>
                   <q-avatar color="primary" text-color="white">
-                    {{ player.name.charAt(0).toUpperCase() }}
+                    {{ player.player_name.charAt(0).toUpperCase() }}
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>{{ player.name }}</q-item-label>
-                  <q-item-label caption>{{ player.email }}</q-item-label>
+                  <q-item-label>{{ player.player_name }}</q-item-label>
+                  <q-item-label caption>
+                    Nickname: {{ player.player_nickname }}
+                  </q-item-label>
+                  <q-item-label caption>
+                    Points: {{ player.total_points }}
+                  </q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
-
             <div v-else class="text-center text-grey-5 q-pa-md">
               No players in this league yet
             </div>
@@ -197,9 +200,9 @@
               League Tournaments
             </div>
 
-            <q-list v-if="leagueTournaments?.length" separator>
+            <q-list v-if="leagueTournamentsData?.length" separator>
               <q-item
-                v-for="tournament in leagueTournaments"
+                v-for="tournament in leagueTournamentsData"
                 :key="tournament.id"
                 clickable
                 @click="goToTournament(tournament.id)"
@@ -208,7 +211,7 @@
                   <q-item-label>{{ tournament.name }}</q-item-label>
                   <q-item-label caption>
                     Status: {{ tournament.status }} | Format:
-                    {{ tournament.format }}
+                    {{ tournament.type }}
                   </q-item-label>
                 </q-item-section>
                 <q-item-section side>
@@ -250,12 +253,14 @@ const leaguesStore = useLeaguesStore();
 const tournamentsStore = useTournamentsStore();
 const matchesStore = useMatchesStore();
 
+const leagueStandings = computed(() => leaguesStore.leagueStandings);
+
 const selectedPlayer = ref(null);
 const allPlayers = ref([]);
 const availablePlayers = ref([]);
 const newTournament = ref({
   name: "",
-  format: "",
+  type: "",
 });
 
 const quickMatch = ref({
@@ -275,6 +280,9 @@ const loading = computed(
 );
 const currentLeague = computed(() => leaguesStore.currentLeague);
 const leagueTournaments = computed(() => leaguesStore.leagueTournaments);
+const leagueTournamentsData = computed(
+  () => leagueTournaments.value.data || []
+);
 
 const availableOpponents = computed(() => {
   if (!quickMatch.value.player1 || !currentLeague.value?.players)
@@ -285,12 +293,14 @@ const availableOpponents = computed(() => {
 });
 
 function testPrint() {
-  console.log(currentLeague);
+  console.log(leagueStandings.value.data.length);
+  console.log(leagueTournaments.value.data);
 }
 
 onMounted(async () => {
   const leagueId = route.params.id;
   await fetchLeagueData(leagueId);
+  await leaguesStore.fetchLeagueStandings(leagueId);
   await fetchPlayers();
 });
 
@@ -311,7 +321,6 @@ async function fetchLeagueData(leagueId) {
 async function fetchPlayers() {
   try {
     const response = await playerApi.getPlayers();
-    console.log("asd players in league", response);
     allPlayers.value = Array.isArray(response.data.data)
       ? response.data.data
       : [];
@@ -360,6 +369,7 @@ async function addPlayerToLeague() {
       message: `${selectedPlayer.value.name} added to league successfully`,
     });
 
+    leaguesStore.fetchLeagueStandings(route.params.id);
     selectedPlayer.value = null;
     filterAvailablePlayers();
   } catch (error) {
@@ -370,16 +380,25 @@ async function addPlayerToLeague() {
   }
 }
 
+const tournamentFormatMap = {
+  "Single Elimination": "single_elimination",
+  "Double Elimination": "double_elimination",
+  "Round Robin": "round_robin",
+  "Swiss System": "swiss_system",
+};
+
 async function createTournament() {
   if (!newTournament.value.name || !newTournament.value.format) return;
 
   try {
     const tournamentData = {
       name: newTournament.value.name,
-      format: newTournament.value.format,
-      league_id: parseInt(route.params.id),
+      type: tournamentFormatMap[newTournament.value.format], // <-- map to snake_case
+      league_id: route.params.id,
     };
 
+    console.log(route.params.id);
+    console.log("Tournament data I am sending", tournamentData);
     await tournamentsStore.createTournament(tournamentData);
 
     $q.notify({

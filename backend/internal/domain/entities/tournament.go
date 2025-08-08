@@ -2,6 +2,7 @@ package entities
 
 import (
 	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -50,7 +51,7 @@ type Tournament struct {
 }
 
 // NewTournament creates a new tournament
-func NewTournament(leagueID uuid.UUID, name, description string, tournamentType TournamentType, tournamentNumber int) (*Tournament, error) {
+func NewTournament(leagueID uuid.UUID, name string, tournamentType TournamentType, tournamentNumber int) (*Tournament, error) {
 	if name == "" {
 		return nil, ErrInvalidTournamentName
 	}
@@ -59,7 +60,6 @@ func NewTournament(leagueID uuid.UUID, name, description string, tournamentType 
 		ID:               uuid.New(),
 		LeagueID:         leagueID,
 		Name:             name,
-		Description:      stringPtr(description),
 		Type:             tournamentType,
 		Status:           TournamentStatusSetup,
 		GameType:         GameType501,

@@ -56,14 +56,14 @@ export const useLeaguesStore = defineStore("leagues", {
         this.loading = false;
       }
     },
-
     async fetchLeague(id) {
       this.loading = true;
       this.error = null;
       try {
         const response = await leagueApi.getLeague(id);
-        this.currentLeague = response.data;
-        return response.data;
+        // Fix: Use response.data.data if API wraps the league in a 'data' property
+        this.currentLeague = response.data.data || response.data;
+        return this.currentLeague;
       } catch (error) {
         this.error = error.message;
         console.error("Error fetching league:", error);

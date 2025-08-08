@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
@@ -59,13 +61,15 @@ func (h *TournamentHandler) GetTournament(c *gin.Context) {
 // @Router /api/tournaments [post]
 func (h *TournamentHandler) CreateTournament(c *gin.Context) {
 	var req dto.CreateTournamentRequest
+	log.Println("Creating tournament with request:", c.Request.Body)
 	if err := c.ShouldBindJSON(&req); err != nil {
 		http.BadRequestResponse(c, "Invalid request data")
 		return
 	}
 
 	tournamentType := entities.TournamentType(req.Type)
-	tournament, err := h.useCases.Tournament.CreateTournament(c.Request.Context(), req.LeagueID, req.Name, req.Description, tournamentType)
+	log.Println(req.LeagueID, req.Name, tournamentType)
+	tournament, err := h.useCases.Tournament.CreateTournament(c.Request.Context(), req.LeagueID, req.Name, tournamentType)
 	if err != nil {
 		http.InternalErrorResponse(c, "Failed to create tournament")
 		return

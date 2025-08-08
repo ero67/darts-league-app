@@ -31,7 +31,6 @@ type AddPlayerToLeagueRequest struct {
 type CreateTournamentRequest struct {
 	LeagueID    uuid.UUID `json:"league_id" binding:"required"`
 	Name        string    `json:"name" binding:"required,min=1,max=255"`
-	Description string    `json:"description,omitempty"`
 	Type        string    `json:"type" binding:"required,oneof=single_elimination double_elimination round_robin"`
 }
 
