@@ -79,14 +79,14 @@ func main() {
 	}
 	
 	log.Printf("🚀 Server starting on port %s", port)
-	log.Printf("📖 API Documentation:")
-	log.Printf("   Health:     GET    /health")
-	log.Printf("   Players:    GET    /api/players")
-	log.Printf("   Players:    POST   /api/players") 
-	log.Printf("   Players:    GET    /api/players/{id}")
-	log.Printf("   Leagues:    GET    /api/leagues")
-	log.Printf("   Leagues:    POST   /api/leagues")
-	log.Printf("   And more...")
+	// log.Printf("📖 API Documentation:")
+	// log.Printf("   Health:     GET    /health")
+	// log.Printf("   Players:    GET    /api/players")
+	// log.Printf("   Players:    POST   /api/players") 
+	// log.Printf("   Players:    GET    /api/players/{id}")
+	// log.Printf("   Leagues:    GET    /api/leagues")
+	// log.Printf("   Leagues:    POST   /api/leagues")
+	// log.Printf("   And more...")
 	
 	if err := router.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

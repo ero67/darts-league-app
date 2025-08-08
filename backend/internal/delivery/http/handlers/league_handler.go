@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	
+
 	"darts-league-backend/internal/delivery/http"
 	"darts-league-backend/internal/delivery/http/dto"
 	"darts-league-backend/internal/domain/entities"
@@ -60,7 +62,7 @@ func (h *LeagueHandler) GetLeague(c *gin.Context) {
 		http.BadRequestResponse(c, "Invalid league ID")
 		return
 	}
-
+	fmt.Println("Fetching league with ID:", id)
 	league, err := h.useCases.League.GetLeague(c.Request.Context(), id)
 	if err != nil {
 		if err == entities.ErrLeagueNotFound {

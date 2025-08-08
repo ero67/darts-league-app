@@ -81,7 +81,7 @@
               <q-icon name="sports_score" class="q-mr-sm" />
               Quick Match
             </div>
-            
+
             <q-select
               v-model="quickMatch.player1"
               :options="currentLeague?.players || []"
@@ -100,17 +100,21 @@
               class="q-mb-md"
             />
 
-            <q-btn 
-              color="primary" 
+            <q-btn
+              color="primary"
               label="Create & Start Match"
               @click="createQuickMatch"
-              :disable="!quickMatch.player1 || !quickMatch.player2 || quickMatch.player1.id === quickMatch.player2.id"
+              :disable="
+                !quickMatch.player1 ||
+                !quickMatch.player2 ||
+                quickMatch.player1.id === quickMatch.player2.id
+              "
               :loading="loading"
               class="full-width q-mb-sm"
             />
 
-            <q-btn 
-              color="secondary" 
+            <q-btn
+              color="secondary"
               label="Go to Matches"
               @click="goToMatches"
               outline
@@ -225,6 +229,7 @@
           </q-card-section>
         </q-card>
       </div>
+      <q-btn @click="testPrint">Test</q-btn>
     </div>
   </q-page>
 </template>
@@ -272,9 +277,16 @@ const currentLeague = computed(() => leaguesStore.currentLeague);
 const leagueTournaments = computed(() => leaguesStore.leagueTournaments);
 
 const availableOpponents = computed(() => {
-  if (!quickMatch.value.player1 || !currentLeague.value?.players) return currentLeague.value?.players || []
-  return currentLeague.value.players.filter(player => player.id !== quickMatch.value.player1.id)
+  if (!quickMatch.value.player1 || !currentLeague.value?.players)
+    return currentLeague.value?.players || [];
+  return currentLeague.value.players.filter(
+    (player) => player.id !== quickMatch.value.player1.id
+  );
 });
+
+function testPrint() {
+  console.log(currentLeague);
+}
 
 onMounted(async () => {
   const leagueId = route.params.id;
@@ -411,30 +423,30 @@ async function createQuickMatch() {
   try {
     const matchData = {
       player1_id: quickMatch.value.player1.id,
-      player2_id: quickMatch.value.player2.id
+      player2_id: quickMatch.value.player2.id,
     };
 
     const createdMatch = await matchesStore.createMatch(matchData);
-    
+
     // Start the match immediately
     await matchesStore.startMatch(createdMatch.id);
 
     $q.notify({
-      type: 'positive',
-      message: 'Match created and started successfully'
+      type: "positive",
+      message: "Match created and started successfully",
     });
 
     // Navigate to the match
     router.push(`/matches/${createdMatch.id}`);
   } catch (error) {
     $q.notify({
-      type: 'negative',
-      message: 'Failed to create match'
+      type: "negative",
+      message: "Failed to create match",
     });
   }
 }
 
 function goToMatches() {
-  router.push('/matches');
+  router.push("/matches");
 }
 </script>
